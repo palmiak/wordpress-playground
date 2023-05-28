@@ -51,8 +51,8 @@ The `client` object provides you with a low-level API for managing files and dir
 await client.mkdirTree('/wordpress/test');
 // Create a new PHP file
 await client.writeFile(
-    '/wordpress/test/index.php',
-    `<?php
+	'/wordpress/test/index.php',
+	`<?php
      echo "Hello, world!<br/>";
      // List all the files in current directory
      print_r(glob(__DIR__ . '/*'));
@@ -83,18 +83,18 @@ For example, here's how you would send a message called "post-save" with a JSON-
 const php = await PHP.load('8.0');
 
 php.onMessage(
-    'post-save',
-    // The data is always passed as a string
-    function (data: string) {
-        // Let's decode and log the data:
-        console.log(JSON.parse(data));
-    }
+	'post-save',
+	// The data is always passed as a string
+	function (data: string) {
+		// Let's decode and log the data:
+		console.log(JSON.parse(data));
+	}
 );
 
 // Now that we have a listener in place, let's
 // dispatch a message:
 await php.run({
-    code: `<?php
+	code: `<?php
         post_message_to_js(
             "post-save",
             json_encode([
