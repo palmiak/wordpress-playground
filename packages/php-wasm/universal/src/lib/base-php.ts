@@ -10,6 +10,7 @@ import type { PHPRuntimeId } from './load-php-runtime';
 import {
 	FileInfo,
 	IsomorphicLocalPHP,
+	MessageListener,
 	PHPRequest,
 	PHPRequestHeaders,
 	PHPRunOptions,
@@ -39,6 +40,7 @@ export abstract class BasePHP implements IsomorphicLocalPHP {
 	#webSapiInitialized = false;
 	#wasmErrorsTarget: UnhandledRejectionsTarget | null = null;
 	#serverEntries: Record<string, string> = {};
+	#messageListeners: Record<string, MessageListener[]> = {};
 	requestHandler?: PHPBrowser;
 
 	/**
@@ -60,6 +62,14 @@ export abstract class BasePHP implements IsomorphicLocalPHP {
 				new PHPRequestHandler(this, serverOptions)
 			);
 		}
+	}
+
+	/** @inheritDoc */
+	async onMessage(type: string, listener: MessageListener) {
+		if (!(type in this.#messageListeners)) {
+			this.#messageListeners[type] = [];
+		}
+		this.#messageListeners[type].push(listener);
 	}
 
 	/** @inheritDoc */
@@ -93,6 +103,12 @@ export abstract class BasePHP implements IsomorphicLocalPHP {
 			throw new Error('Invalid PHP runtime id.');
 		}
 		this[__private__dont__use] = runtime;
+		runtime['onMessage'] = (type: string, data: string) => {
+			const listeners = this.#messageListeners[type] || [];
+			for (const listener of listeners) {
+				listener(data);
+			}
+		};
 
 		this.#wasmErrorsTarget = improveWASMErrorReporting(runtime);
 	}

@@ -322,7 +322,54 @@ export interface IsomorphicLocalPHP extends RequestHandler {
 	 * @param  options - PHP runtime options.
 	 */
 	run(options: PHPRunOptions): Promise<PHPResponse>;
+
+	/**
+	 * Listens to message sent by the PHP code.
+	 *
+	 * To dispatch messages, call:
+	 *
+	 *     post_message_to_js(string $type, string $data)
+	 *
+	 *     Arguments:
+	 *         $type – is used to call the correct listener
+	 *         $data – any extra information as a string
+	 *
+	 * @example
+	 *
+	 * ```ts
+	 * const php = await PHP.load('8.0');
+	 *
+	 * php.onMessage(
+	 *     'post-save',
+	 *     // The data is always passed as a string
+	 *     function (data: string) {
+	 *         // Let's decode and log the data:
+	 *         console.log(JSON.parse(data));
+	 *     }
+	 * );
+	 *
+	 * // Now that we have a listener in place, let's
+	 * // dispatch a message:
+	 * await php.run({
+	 *     code: `<?php
+	 *         post_message_to_js(
+	 *             "post-save",
+	 *             json_encode([
+	 *                 'post_id' => '15',
+	 *                 'post_title' => 'This is a blog post!'
+	 *             ])
+	 *         ));
+	 *     `,
+	 * });
+	 * ```
+	 *
+	 * @param type Name of the message.
+	 * @param listener Callback function to handle the message.
+	 */
+	onMessage(type: string, listener: MessageListener): void;
 }
+
+export type MessageListener = (data: string) => void;
 
 export type IsomorphicRemotePHP = Remote<IsomorphicLocalPHP>;
 export type UniversalPHP = IsomorphicLocalPHP | IsomorphicRemotePHP;

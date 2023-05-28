@@ -1,4 +1,5 @@
 import { getPHPLoaderModule, NodePHP } from '..';
+import { vi } from 'vitest';
 import {
 	loadPHPRuntime,
 	SupportedPHPVersions,
@@ -601,6 +602,36 @@ bar1
 				sha1: 'a94a8fe5ccb19ba61c4c0873d391e987982fbbd3',
 				hash: '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08',
 			});
+		});
+	});
+
+	describe('onMessage', () => {
+		it('should pass messages to JS', async () => {
+			let messageReceived = '';
+			php.onMessage('hello', (message) => {
+				messageReceived = message;
+			});
+			const out = await php.run({
+				code: `<?php
+				post_message_to_js('hello', 'world');
+				`,
+			});
+			expect(out.errors).toBe('');
+			expect(messageReceived).toBe('world');
+		});
+
+		it('should call only the matching onMessage listener', async () => {
+			const listener = vi.fn();
+			php.onMessage('hello_bar', listener);
+			const out = await php.run({
+				code: `<?php
+				post_message_to_js('hello_foo', 'world_foo');
+				post_message_to_js('hello_bar', 'world_bar');
+				`,
+			});
+			expect(out.errors).toBe('');
+			expect(listener).toBeCalledTimes(1);
+			expect(listener).toHaveBeenCalledWith('world_bar');
 		});
 	});
 });

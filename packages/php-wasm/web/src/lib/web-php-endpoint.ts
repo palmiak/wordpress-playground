@@ -1,5 +1,6 @@
 import type {
 	BasePHP,
+	MessageListener,
 	IsomorphicLocalPHP,
 	PHPRequest,
 	PHPResponse,
@@ -157,5 +158,10 @@ export class WebPHPEndpoint implements IsomorphicLocalPHP {
 	/** @inheritDoc @php-wasm/web!WebPHP.fileExists */
 	fileExists(path: string): boolean {
 		return _private.get(this)!.php.fileExists(path);
+	}
+
+	/** @inheritDoc @php-wasm/web!WebPHP.onMessage */
+	onMessage(type: string, listener: MessageListener): void {
+		_private.get(this)!.php.onMessage(type, listener);
 	}
 }
