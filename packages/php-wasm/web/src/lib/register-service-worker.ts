@@ -68,7 +68,7 @@ export async function registerServiceWorker<
 		});
 	}
 
-	// Proxy the service worker messages to the worker thread:
+	// Proxy the service worker messages to the web worker:
 	navigator.serviceWorker.addEventListener(
 		'message',
 		async function onMessage(event) {
